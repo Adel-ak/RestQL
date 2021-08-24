@@ -1,40 +1,195 @@
-<!-- <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p> -->
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
 ## Description
 
-[Rest-QL](https://github.com/Adel-ak/Rest-QL) A qurey language for your nodejs server (epressjs, nestjs etc)
+[Rest-QL](https://github.com/Adel-ak/Rest-QL) A query language for your nodejs server (epressjs, nestjs etc)
+
+Graphql is awesome but at the same time it can be a pain, If you havea love hate relation ship with graphql and want to move on to rest api, but you cant forget about some of graphql feature, well this package is for you.
+
+Rest-QL is a tool, which was created to help you with query your endpoints, it does'nt replace how your current server looks or run's, it just helps you return what you need and also resolve your fields if needed in a cleaner way. please view the examples to understand what this package helps with.
 
 ## Installation
 
 ```bash
-$ npm i @akost/rest-ql
+$ npm i @adelak/rest-ql
 ```
 
-<!-- ## Support
+`useParseQuery`
+This method will create key value pair which can be used to filter out unwanted keys from your db query.
 
-Rest-QL is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support). -->
+```
+import { useParseQuery } from '@adelak/rest-ql';
+
+//Send the body in url query or request body (up to you where it comes from)
+const body = `
+  {
+    _id
+    name
+    phone
+    address {
+      house
+      building
+      street
+    }
+  }
+`
+
+const option = {}
+
+const [query, qureyError] = useParseQuery(body, option);
+
+
+console.log(qureyError) // contains error if any (null if no error)
+console.log(query) // contains query shape (null if there is a error)
+
+// query out put
+{
+  _id: true,
+  name: true,
+  phone: true,
+  address: {
+    house: true,
+    building: true,
+    street: true
+  }
+}
+
+// if option flatten is true object shape will be
+{
+  _id: true,
+  name: true,
+  phone: true,
+  "address.house": true,
+  "address.building": true,
+  "address.street": true
+}
+```
+
+### NOTE
+
+```
+  // if you are going to minimize the qurey size to max you make it look like this
+  -->  {_id,name,phone,address{house,building,street,}}
+  // make sure you you add a comma after each property else it will result to this
+  --> { _idnamephoneaddress: { housebuildingstreet: true } }
+```
+
+### Options
+
+| Key       | Type                        | Deault |
+| --------- | --------------------------- | ------ |
+| flatten   | boolean                     | false  |
+| Paragraph | boolean \| string \| 0 \| 1 | true   |
+
+`useResolver`
+
+This Method helps with resolving your data and change the shape of it in a cleaner way
+
+### Example
+
+```
+import { useResolver } from '@adelak/rest-ql';
+
+type TAddress = {
+    house: number | string;
+    building: number;
+    street: string;
+  };
+
+  type TUser = {
+    _id: number;
+    name: string;
+    phone: string;
+    address: TAddress;
+  };
+
+  type TState = {
+    [key: string]: any;
+  };
+
+  // data from somewhere, mongodb, mysql, lala land. it doesnt matter
+  const user = {
+    _id: 123,
+    name: 'jojo',
+    phone: '123456789',
+    address: {
+      house: 83,
+      building: 1,
+      street: 'MAIN LANE',
+    },
+  };
+
+  const addressResolver = {
+    house: (rootData: TAddress, state: TState) => {
+      const hideHouseNumber = state.hideHouseNumber;
+      return hideHouseNumber ? 'Im not telling you my house number' : rootData.house;
+    },
+    building: (rootData: TAddress, state: TState) => {
+      const hideHouseNumber = state.hideHouseNumber;
+      const building = hideHouseNumber ? rootData.building + 1e2 : rootData.building;
+      return `I live in building ${building}`;
+    },
+    street: (rootData: TAddress, state: TState) => {
+      const hideHouseNumber = state.hideHouseNumber;
+      const street = hideHouseNumber ? 'Cant remember' : rootData.street;
+      return street;
+    },
+  };
+
+  const useAddressResolver = async (rootData: TUser, state: TState) => {
+    // you can pass state from the root to another useResolver
+    const [data, err] = await useResolver<TAddress>(rootData.address, addressResolver, state);
+    if (err) {
+      // handle error
+      console.log(err);
+    }
+    return data;
+  };
+
+  const resolver = {
+    name: (rootData: TUser, state: TState) => {
+      // store any value in state to pass on to the next resolver;
+      state.counteryCode = '+902';
+      state.hideHouseNumber = true;
+      const userName = rootData.name;
+      return `Hi am ${userName}`;
+    },
+    phone: (rootData: TUser, state: TState) => {
+      const userPhone = rootData.phone;
+      return `You can get to me on my call ${state.counteryCode} - ${userPhone}`;
+    },
+    //you can also use useResolver on a nested resolver
+    address: useAddressResolver,
+  };
+
+  const [data, err] = await useResolver<TUser>(user, resolver);
+
+  console.log(err); // contains error if any (null if no error)
+  console.log(data); // contains query shape (null if there is a error)
+
+  // data out put
+  {
+    _id: 123,
+    name: 'Hi am jojo',
+    phone: 'You can get to me on my call +902 - 123456789',
+    address: {
+      house: 'Im not telling you my house number',
+      building: 'I live in building 101',
+      street: 'Cant remember'
+    }
+  }
+```
+
+you can do more with useResolve, have a look at this examples
+
+[Resolve data with dataLoader](https://github.com/Adel-ak/RestQL/tree/main/example/resolveData-withDataLoader.ts)
+[Resolve data from array of objects](https://github.com/Adel-ak/RestQL/tree/main/example/resolveData-ArrayData.ts)
+[Resolve data from object](https://github.com/Adel-ak/RestQL/tree/main/example/resolveData.ts)
+[All](https://github.com/Adel-ak/RestQL/tree/main/example)
+
+## Support
+
+Rest-QL is an MIT-licensed open source project. It can grow with your help by making PR's and issue's.
+
+Feel free to requrest for a feature.
 
 ## Stay in touch
 

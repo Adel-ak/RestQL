@@ -2,15 +2,15 @@ import { gql } from 'graphql-tag';
 import { flatten } from 'flat';
 
 type Obj = Record<string, any>;
-type TQqlQurey = string | Obj;
+type TQlQuery = string | Obj;
 type TParseOptions = {
   flatten?: boolean;
   KeyVaule?: string | 0 | 1 | boolean;
 };
 
-function parseQurey(gqlQurey: TQqlQurey, parseOptions?: TParseOptions) {
+function parseQuery(qlQuery: TQlQuery, parseOptions?: TParseOptions) {
   try {
-    if (gqlQurey) {
+    if (qlQuery) {
       const options = Object.assign(
         {},
         {
@@ -21,30 +21,30 @@ function parseQurey(gqlQurey: TQqlQurey, parseOptions?: TParseOptions) {
       );
       let qureyObj;
 
-      if (typeof gqlQurey === 'string') {
-        let gqlString = gqlQurey.replace(/[\n \s]/g, '');
-        if (gqlString.startsWith('{') || gqlString.startsWith('body')) {
-          if (gqlString.startsWith('body')) {
-            gqlString = gqlString.replace('body', '');
+      if (typeof qlQuery === 'string') {
+        let qlString = qlQuery.trim();
+        if (qlString.startsWith('{') || qlString.startsWith('body')) {
+          if (qlString.startsWith('body')) {
+            qlString = qlString.replace('body', '');
           }
         } else {
           throw {
             code: 'Syntax Error',
-            message: 'Qurey must start with { or body {',
+            message: 'Query must start with { or body {',
           };
         }
         qureyObj = gql`
-          ${gqlString}
+          ${qlString}
         `.definitions;
       } else {
-        qureyObj = gqlQurey;
+        qureyObj = qlQuery;
       }
 
       const body = Array.isArray(qureyObj) ? qureyObj : [qureyObj];
-      const qurey = body.reduce((acc: Obj, item: Obj) => {
+      const query = body.reduce((acc: Obj, item: Obj) => {
         item.selectionSet.selections.map((y: Obj) => {
           if (y.selectionSet) {
-            acc[y.name.value] = parseQurey(y, options);
+            acc[y.name.value] = parseQuery(y, options);
           } else {
             acc[y.name.value] = options.KeyVaule;
           }
@@ -52,7 +52,7 @@ function parseQurey(gqlQurey: TQqlQurey, parseOptions?: TParseOptions) {
         return acc;
       }, {});
 
-      const res = options.flatten ? flatten(qurey) : qurey;
+      const res = options.flatten ? flatten(query) : query;
       return res;
     } else {
       throw {
@@ -63,7 +63,7 @@ function parseQurey(gqlQurey: TQqlQurey, parseOptions?: TParseOptions) {
     if (error.code === 'bad-value') {
       throw {
         code: 'Syntax Error',
-        message: 'Qurey string is required',
+        message: 'Query string is required',
       };
     }
 
@@ -81,12 +81,12 @@ function parseQurey(gqlQurey: TQqlQurey, parseOptions?: TParseOptions) {
   }
 }
 
-type TQureyRes = [Obj | null, any];
+type TQueryRes = [Obj | null, any];
 
-export function useParseQurey(gqlQurey: TQqlQurey, parseOptions?: TParseOptions): TQureyRes {
+export function useParseQuery(qlQuery: TQlQuery, parseOptions?: TParseOptions): TQueryRes {
   try {
-    const parsedQurey = parseQurey(gqlQurey, parseOptions);
-    return [parsedQurey, null];
+    const parsedQuery = parseQuery(qlQuery, parseOptions);
+    return [parsedQuery, null];
   } catch (error) {
     return [null, { error }];
   }

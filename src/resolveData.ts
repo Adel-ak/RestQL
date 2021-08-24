@@ -1,10 +1,18 @@
-import { Obj } from './types';
+type TState = {
+  [key: string]: any;
+};
 
-type TResolverFn<RootType = any> = (root: RootType, state?: Obj) => any | Promise<any>;
+type TResolverFn<RootType = any, StateType = TState> = (root: RootType, state: StateType) => any | Promise<any>;
 
 type TResolvers = Record<string, TResolverFn>;
 
-async function resolveData<DataType>(data: DataType | DataType[], resolvers: TResolvers, state?: Obj) {
+type TResolveRes<ResolveType> = [ResolveType | ResolveType[] | null, any | null];
+
+async function resolveData<DataType, StateType = TState>(
+  data: DataType | DataType[],
+  resolvers: TResolvers,
+  state: StateType,
+) {
   const resolveState = state || {};
   if (Array.isArray(data)) {
     const arr = data.map(async (obj) => {
@@ -29,15 +37,13 @@ async function resolveData<DataType>(data: DataType | DataType[], resolvers: TRe
   }
 }
 
-type TResolveRes<T> = [T | T[] | null, any];
-
-export async function useResolver<DataType = any>(
+export async function useResolver<DataType = any, StateType = TState>(
   data: DataType | DataType[],
   resolvers: TResolvers,
-  state?: Obj,
+  state?: StateType,
 ): Promise<TResolveRes<DataType>> {
   try {
-    const resolvedData = await resolveData<DataType>(data, resolvers, state);
+    const resolvedData = await resolveData<DataType>(data, resolvers, state || {});
     return [resolvedData, null];
   } catch (error) {
     return [null, { error }];

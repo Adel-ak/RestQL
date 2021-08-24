@@ -1,2 +1,2 @@
-export { useParseQurey } from './parseQurey';
+export { useParseQuery } from './parseQuery';
 export { useResolver } from './resolveData';

@@ -1,13 +1,15 @@
 {
   "name": "@adelak/rest-ql",
   "version": "1.0.2",
-  "description": "A qurey lang for rest api",
+  "description": "A query lang for rest api",
   "keywords": [],
   "author": "Adel ak",
   "license": "MIT",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "repository": {
     "url": "https://github.com/Adel-ak/RestQL",
     "type": "git"
@@ -18,7 +20,6 @@
   },
   "homepage": "https://github.com/Adel-ak/RestQL",
   "scripts": {
-    "start": "ts-node src/index",
     "prebuild": "rm -rf lib",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -38,6 +39,7 @@
     "@types/node": "^16.7.1",
     "@typescript-eslint/eslint-plugin": "^4.29.2",
     "@typescript-eslint/parser": "^4.29.2",
+    "dataloader": "^2.0.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.1",
