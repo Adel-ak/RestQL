@@ -1,22 +1,33 @@
 {
-  "name": "@akost/rest-ql",
-  "version": "1.0.1",
+  "name": "@adelak/rest-ql",
+  "version": "1.0.2",
   "description": "A qurey lang for rest api",
   "keywords": [],
   "author": "Adel ak",
   "license": "MIT",
-  "main": "./dist/main.js",
-  "types": "./dist/main.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": ["lib"],
+  "repository": {
+    "url": "https://github.com/Adel-ak/RestQL",
+    "type": "git"
+  },
+  "bugs": {
+    "email": "adelkerow@gmail.com",
+    "url": "https://github.com/Adel-ak/RestQL/issues"
+  },
+  "homepage": "https://github.com/Adel-ak/RestQL",
   "scripts": {
-    "start": "ts-node src/main",
-    "prebuild": "rm -rf dist",
-    "build": "npm run prebuild && tsc",
+    "start": "ts-node src/index",
+    "prebuild": "rm -rf lib",
+    "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "check:update": "ncu",
     "update": "ncu -u",
     "postinstall": "git config core.hooksPath ./git-hooks",
-    "pq": "pretty-quick"
+    "pq": "pretty-quick",
+    "push": "npm run build && npm publish --access=public"
   },
   "dependencies": {
     "flat": "^5.0.2",
@@ -36,5 +47,8 @@
     "ts-node": "^10.2.1",
     "tsconfig-paths": "^3.10.1",
     "typescript": "^4.3.5"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

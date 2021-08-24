@@ -10,50 +10,63 @@ type TParseOptions = {
 
 function parseQurey(gqlQurey: TQqlQurey, parseOptions?: TParseOptions) {
   try {
-    const options = Object.assign(
-      {},
-      {
-        flatten: false,
-        KeyVaule: true,
-      },
-      parseOptions || {},
-    );
-    let qureyObj;
+    if (gqlQurey) {
+      const options = Object.assign(
+        {},
+        {
+          flatten: false,
+          KeyVaule: true,
+        },
+        parseOptions || {},
+      );
+      let qureyObj;
 
-    if (typeof gqlQurey === 'string') {
-      let gqlString = gqlQurey.replace(/[\n \s]/g, '');
-      if (gqlString.startsWith('{') || gqlString.startsWith('body')) {
-        if (gqlString.startsWith('body')) {
-          gqlString = gqlString.replace('body', '');
+      if (typeof gqlQurey === 'string') {
+        let gqlString = gqlQurey.replace(/[\n \s]/g, '');
+        if (gqlString.startsWith('{') || gqlString.startsWith('body')) {
+          if (gqlString.startsWith('body')) {
+            gqlString = gqlString.replace('body', '');
+          }
+        } else {
+          throw {
+            code: 'Syntax Error',
+            message: 'Qurey must start with { or body {',
+          };
         }
+        qureyObj = gql`
+          ${gqlString}
+        `.definitions;
       } else {
-        throw {
-          code: 'Syntax Error',
-          message: 'Qurey must start with { or body {',
-        };
+        qureyObj = gqlQurey;
       }
-      qureyObj = gql`
-        ${gqlString}
-      `.definitions;
+
+      const body = Array.isArray(qureyObj) ? qureyObj : [qureyObj];
+      const qurey = body.reduce((acc: Obj, item: Obj) => {
+        item.selectionSet.selections.map((y: Obj) => {
+          if (y.selectionSet) {
+            acc[y.name.value] = parseQurey(y, options);
+          } else {
+            acc[y.name.value] = options.KeyVaule;
+          }
+        });
+        return acc;
+      }, {});
+
+      const res = options.flatten ? flatten(qurey) : qurey;
+      return res;
     } else {
-      qureyObj = gqlQurey;
+      throw {
+        code: 'bad-value',
+      };
+    }
+  } catch (error) {
+    if (error.code === 'bad-value') {
+      throw {
+        code: 'Syntax Error',
+        message: 'Qurey string is required',
+      };
     }
 
-    const body = Array.isArray(qureyObj) ? qureyObj : [qureyObj];
-    const qurey = body.reduce((acc: Obj, item: Obj) => {
-      item.selectionSet.selections.map((y: Obj) => {
-        if (y.selectionSet) {
-          acc[y.name.value] = parseQurey(y, options);
-        } else {
-          acc[y.name.value] = options.KeyVaule;
-        }
-      });
-      return acc;
-    }, {});
-
-    const res = options.flatten ? flatten(qurey) : qurey;
-    return res;
-  } catch (error) {
     if (error.message.includes('Syntax Error')) {
       throw {
         code: 'Syntax Error',
