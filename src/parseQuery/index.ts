@@ -1,12 +1,7 @@
 import { gql } from 'graphql-tag';
 import { flatten } from 'flat';
-
-type Obj = Record<string, any>;
-type TQlQuery = string | Obj;
-type TParseOptions = {
-  flatten?: boolean;
-  KeyVaule?: string | 0 | 1 | boolean;
-};
+import { TParseOptions, TQlQuery, TParseRes } from './types';
+import { TObj, TUseRes } from '../types';
 
 function parseQuery(qlQuery: TQlQuery, parseOptions?: TParseOptions) {
   try {
@@ -41,8 +36,8 @@ function parseQuery(qlQuery: TQlQuery, parseOptions?: TParseOptions) {
       }
 
       const body = Array.isArray(qureyObj) ? qureyObj : [qureyObj];
-      const query = body.reduce((acc: Obj, item: Obj) => {
-        item.selectionSet.selections.map((y: Obj) => {
+      const query = body.reduce((acc: TObj, item: TObj) => {
+        item.selectionSet.selections.map((y: TObj) => {
           if (y.selectionSet) {
             acc[y.name.value] = parseQuery(y, options);
           } else {
@@ -81,9 +76,7 @@ function parseQuery(qlQuery: TQlQuery, parseOptions?: TParseOptions) {
   }
 }
 
-type TQueryRes = [Obj | null, any];
-
-export function useParseQuery(qlQuery: TQlQuery, parseOptions?: TParseOptions): TQueryRes {
+export function useParseQuery<T = TObj>(qlQuery: TQlQuery, parseOptions?: TParseOptions): TUseRes<TParseRes<T>> {
   try {
     const parsedQuery = parseQuery(qlQuery, parseOptions);
     return [parsedQuery, null];

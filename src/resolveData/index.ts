@@ -1,12 +1,5 @@
-type TState = {
-  [key: string]: any;
-};
-
-type TResolverFn<RootType = any, StateType = TState> = (root: RootType, state: StateType) => any | Promise<any>;
-
-type TResolvers = Record<string, TResolverFn>;
-
-type TResolveRes<ResolveType> = [ResolveType | ResolveType[] | null, any | null];
+import { TUseRes } from '../types';
+import { TResolvers, TState } from './types';
 
 async function resolveData<DataType, StateType = TState>(
   data: DataType | DataType[],
@@ -37,11 +30,11 @@ async function resolveData<DataType, StateType = TState>(
   }
 }
 
-export async function useResolver<DataType = any, StateType = TState>(
+export async function useResolver<DataType = any>(
   data: DataType | DataType[],
   resolvers: TResolvers,
-  state?: StateType,
-): Promise<TResolveRes<DataType>> {
+  state: TState = {},
+): Promise<TUseRes<DataType | DataType[]>> {
   try {
     const resolvedData = await resolveData<DataType>(data, resolvers, state || {});
     return [resolvedData, null];

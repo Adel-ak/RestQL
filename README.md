@@ -12,8 +12,55 @@ Rest-QL is a tool, which was created to help you with query your endpoints, it d
 $ npm i @adelak/rest-ql
 ```
 
-`useParseQuery`
-This method will create key value pair which can be used to filter out unwanted keys from your db query.
+## `useSanitizeData`
+
+useSanitizeData help in getting rid of the keys you dont need, which should should reduce in the amount of data begin send, just give it the your data from the data and your parsed query.
+
+### NOTE: -
+
+It would be much better of your got rid of unwanted data from the data base level, example if you are using mongodb. use your parsed query for your projections.
+
+In the event you cant, useSanitizeData.
+
+```
+const user = {
+    _id: 123,
+    name: 'john',
+    phone: 12345,
+    age: 33,
+    address: {
+      house: 22,
+      building: 34,
+      street: 'Main street',
+    },
+  };
+
+  const body = ` {
+    _id
+    name
+    phone
+    age
+  }`;
+
+  const [query] = useParseQuery(body);
+  const [data, err] = useSanitizeData([user], query!);
+  console.log(err); // contains error if any (null if no error)
+  console.log(data); // [ { _id: 123, name: 'john', phone: 12345, age: 33 } ]
+```
+
+### Options
+
+| Key               | Type    | Deault |
+| ----------------- | ------- | ------ |
+| allFieldsRequired | boolean | false  |
+| removedNull       | boolean | true   |
+| removeEmptyObjs   | boolean | true   |
+
+## `useParseQuery`
+
+useParseQuery will create key value pair which can be used to filter out unwanted keys from your db query.
+
+### Example
 
 ```
 import { useParseQuery } from '@adelak/rest-ql';
@@ -63,7 +110,7 @@ console.log(query) // contains query shape (null if there is a error)
 }
 ```
 
-### NOTE
+### NOTE: -
 
 ```
   // if you are going to minimize the qurey size to max you make it look like this
@@ -79,9 +126,9 @@ console.log(query) // contains query shape (null if there is a error)
 | flatten   | boolean                     | false  |
 | Paragraph | boolean \| string \| 0 \| 1 | true   |
 
-`useResolver`
+## `useResolver`
 
-This Method helps with resolving your data and change the shape of it in a cleaner way
+useResolver helps with resolving your data and change the shape of it in a cleaner way
 
 ### Example
 
@@ -181,8 +228,11 @@ type TAddress = {
 you can do more with useResolve, have a look at this examples
 
 [Resolve data with dataLoader](https://github.com/Adel-ak/RestQL/tree/main/example/resolveData-withDataLoader.ts)
+
 [Resolve data from array of objects](https://github.com/Adel-ak/RestQL/tree/main/example/resolveData-ArrayData.ts)
+
 [Resolve data from object](https://github.com/Adel-ak/RestQL/tree/main/example/resolveData.ts)
+
 [All](https://github.com/Adel-ak/RestQL/tree/main/example)
 
 ## Support
